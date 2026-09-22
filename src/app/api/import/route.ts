@@ -16,7 +16,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'CSV file is empty' }, { status: 400 });
     }
 
-    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+    const parsed = Papa.parse(text, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h: string) => h.trim().toLowerCase(),
+    });
 
     if (parsed.errors.length > 0) {
       return NextResponse.json({ error: `CSV parse error: ${parsed.errors[0].message}` }, { status: 400 });
@@ -29,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Required column check
     const requiredColumns = ['month', 'type', 'category', 'name', 'budgeted_amount', 'actual_amount'];
-    const headers = Object.keys(rows[0]).map(h => h.trim());
+    const headers = Object.keys(rows[0]);
     for (const col of requiredColumns) {
       if (!headers.includes(col)) {
         return NextResponse.json({ error: `Missing required column "${col}" in CSV` }, { status: 400 });
@@ -59,7 +63,7 @@ export async function POST(request: NextRequest) {
         const monthNum = parseInt(match[2], 10);
         insertMonth.run(monthId, year, monthNum, new Date().toISOString());
 
-        const type = row.type === 'income' ? 'income' : 'expense';
+        const type = row.type?.toString().toLowerCase().trim() === 'income' ? 'income' : 'expense';
         const category = String(row.category || 'General').trim() || 'General';
         const name = String(row.name || '').trim();
         if (!name) continue;

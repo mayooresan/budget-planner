@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Download, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface CsvDataModalProps {
@@ -19,6 +19,7 @@ export default function CsvDataModal({
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -50,6 +51,9 @@ export default function CsvDataModal({
 
       setMessage({ type: 'success', text: `Successfully imported ${data.importedCount} items!` });
       setFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       onImportSuccess();
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Import error' });
@@ -97,6 +101,7 @@ export default function CsvDataModal({
           <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Import Data</h4>
           <form onSubmit={handleUpload} className="space-y-3">
             <input
+              ref={fileInputRef}
               type="file"
               accept=".csv"
               onChange={(e) => setFile(e.target.files?.[0] || null)}

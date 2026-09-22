@@ -156,4 +156,35 @@ invalid-month,expense,Other,Skip Me,100,100,Bad month
   // Clean up
   db.prepare('DELETE FROM budget_items WHERE month_id = ?').run('2026-12');
   db.prepare('DELETE FROM months WHERE id = ?').run('2026-12');
+
+  // 5. Success case: Case-insensitive headers and type parsing resilience
+  const mixedCaseCsv = `Month, TYPE , Category , Name , Budgeted_Amount , Actual_Amount , Notes
+2026-12, INCOME , Consulting , Strategic Review , 1500 , 1600 , Case test
+2026-12, EXPENSE , Software , Cloud Hosting , 50 , 45 , Case test`;
+
+  const mixedCaseForm = new FormData();
+  mixedCaseForm.append('file', new Blob([mixedCaseCsv]), 'mixed.csv');
+  const reqMixed = new NextRequest('http://localhost:3000/api/import', {
+    method: 'POST',
+    body: mixedCaseForm,
+  });
+  const resMixed = await POST(reqMixed);
+  assert.strictEqual(resMixed.status, 200);
+  const jsonMixed = await resMixed.json();
+  assert.strictEqual(jsonMixed.success, true);
+  assert.strictEqual(jsonMixed.importedCount, 2);
+
+  const mixedItems = db.prepare('SELECT * FROM budget_items WHERE month_id = ?').all('2026-12') as any[];
+  assert.strictEqual(mixedItems.length, 2);
+  const incomeItem = mixedItems.find(i => i.name === 'Strategic Review');
+  assert.ok(incomeItem);
+  assert.strictEqual(incomeItem.type, 'income');
+  const expenseItem = mixedItems.find(i => i.name === 'Cloud Hosting');
+  assert.ok(expenseItem);
+  assert.strictEqual(expenseItem.type, 'expense');
+
+  // Clean up
+  db.prepare('DELETE FROM budget_items WHERE month_id = ?').run('2026-12');
+  db.prepare('DELETE FROM months WHERE id = ?').run('2026-12');
 });
+

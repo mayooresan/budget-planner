@@ -8,10 +8,13 @@ interface KpiCardsProps {
   analytics: MonthAnalytics;
 }
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
 export default function KpiCards({ analytics }: KpiCardsProps) {
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
-  };
+  const formatCurrency = (val: number) => currencyFormatter.format(val);
 
   const incomeDiff = analytics.totalActualIncome - analytics.totalBudgetedIncome;
   const expenseDiff = analytics.totalActualExpenses - analytics.totalBudgetedExpenses;

@@ -17,6 +17,74 @@ import {
   getMonthAnalytics,
 } from '@/lib/actions';
 
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* KPI Cards Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="h-4 w-24 bg-gray-200 rounded"></div>
+              <div className="w-10 h-10 rounded-xl bg-gray-100"></div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <div className="h-8 w-32 bg-gray-200 rounded"></div>
+              <div className="flex justify-between items-center pt-1">
+                <div className="h-3 w-24 bg-gray-100 rounded"></div>
+                <div className="h-3 w-16 bg-gray-100 rounded"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm animate-pulse">
+          <div className="h-5 w-44 bg-gray-200 rounded mb-4"></div>
+          <div className="h-64 bg-gray-50 rounded-xl flex items-end justify-around p-4 gap-2">
+            <div className="w-10 bg-gray-200 rounded-t h-28"></div>
+            <div className="w-10 bg-gray-200 rounded-t h-44"></div>
+            <div className="w-10 bg-gray-200 rounded-t h-24"></div>
+            <div className="w-10 bg-gray-200 rounded-t h-36"></div>
+            <div className="w-10 bg-gray-200 rounded-t h-16"></div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm animate-pulse">
+          <div className="h-5 w-44 bg-gray-200 rounded mb-4"></div>
+          <div className="h-64 bg-gray-50 rounded-xl flex items-center justify-center">
+            <div className="w-36 h-36 rounded-full border-8 border-gray-200"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tables Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {[1, 2].map((i) => (
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 animate-pulse space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div className="h-6 w-28 bg-gray-200 rounded"></div>
+              <div className="h-8 w-24 bg-gray-200 rounded-lg"></div>
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-100 rounded w-full"></div>
+              <div className="h-10 bg-gray-50 rounded w-full"></div>
+              <div className="h-10 bg-gray-50 rounded w-full"></div>
+              <div className="h-10 bg-gray-50 rounded w-full"></div>
+              <div className="h-10 bg-gray-50 rounded w-full"></div>
+            </div>
+            <div className="pt-3 border-t border-gray-100 flex justify-between">
+              <div className="h-4 w-20 bg-gray-200 rounded"></div>
+              <div className="h-4 w-28 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   // Current month defaults to current year-month
   const [currentMonth, setCurrentMonth] = useState<string>(() => {
@@ -98,29 +166,35 @@ export default function Dashboard() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {analytics && <KpiCards analytics={analytics} />}
+        {isLoading ? (
+          <DashboardSkeleton />
+        ) : (
+          <>
+            {analytics && <KpiCards analytics={analytics} />}
 
-        {analytics && <Charts analytics={analytics} />}
+            {analytics && <Charts analytics={analytics} />}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <BudgetTable
-            title="Incomes"
-            type="income"
-            items={incomeItems}
-            onUpdateItem={handleUpdateItem}
-            onDeleteItem={handleDeleteItem}
-            onOpenAddModal={openAddModal}
-          />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <BudgetTable
+                title="Incomes"
+                type="income"
+                items={incomeItems}
+                onUpdateItem={handleUpdateItem}
+                onDeleteItem={handleDeleteItem}
+                onOpenAddModal={openAddModal}
+              />
 
-          <BudgetTable
-            title="Expenses"
-            type="expense"
-            items={expenseItems}
-            onUpdateItem={handleUpdateItem}
-            onDeleteItem={handleDeleteItem}
-            onOpenAddModal={openAddModal}
-          />
-        </div>
+              <BudgetTable
+                title="Expenses"
+                type="expense"
+                items={expenseItems}
+                onUpdateItem={handleUpdateItem}
+                onDeleteItem={handleDeleteItem}
+                onOpenAddModal={openAddModal}
+              />
+            </div>
+          </>
+        )}
       </main>
 
       {/* Modals */}

@@ -59,6 +59,7 @@ export default function Header({
             <Calendar className="w-4 h-4 text-emerald-600" />
             <input
               type="month"
+              aria-label="Select month"
               value={currentMonth}
               onChange={(e) => e.target.value && onMonthChange(e.target.value)}
               className="bg-transparent font-semibold text-gray-800 text-sm focus:outline-none cursor-pointer"

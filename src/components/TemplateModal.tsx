@@ -105,6 +105,7 @@ export default function TemplateModal({ isOpen, onClose, onTemplatesChanged }: T
           <input
             type="number"
             step="any"
+            min="0"
             placeholder="Default $"
             value={newAmount || ''}
             onChange={(e) => setNewAmount(parseFloat(e.target.value) || 0)}
@@ -170,6 +171,7 @@ export default function TemplateModal({ isOpen, onClose, onTemplatesChanged }: T
                         <input
                           type="number"
                           step="any"
+                          min="0"
                           value={editForm.default_budgeted_amount ?? 0}
                           onChange={(e) => setEditForm({ ...editForm, default_budgeted_amount: parseFloat(e.target.value) || 0 })}
                           className="px-2 py-1 border border-gray-300 rounded text-xs w-20 text-right"

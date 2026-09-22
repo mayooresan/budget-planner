@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const DEFAULT_DB_PATH = path.join(process.cwd(), 'data', 'budget.db');
 
-let dbInstance: Database.Database | null = null;
+const globalForDb = globalThis as unknown as { sqliteDb: Database.Database | undefined };
 
 const DEFAULT_TEMPLATES = [
   // Incomes
@@ -80,8 +80,8 @@ export function initDb(dbPath: string = DEFAULT_DB_PATH): Database.Database {
 }
 
 export function getDb(): Database.Database {
-  if (!dbInstance) {
-    dbInstance = initDb();
+  if (!globalForDb.sqliteDb) {
+    globalForDb.sqliteDb = initDb();
   }
-  return dbInstance;
+  return globalForDb.sqliteDb;
 }
