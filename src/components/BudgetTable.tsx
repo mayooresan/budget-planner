@@ -2,7 +2,14 @@
 
 import React, { useState } from 'react';
 import { BudgetItem, ItemType } from '@/lib/types';
-import { Plus, Trash2, Edit2, Check } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
+const formatCurrency = (val: number) => currencyFormatter.format(val);
 
 interface BudgetTableProps {
   title: string;
@@ -35,15 +42,19 @@ export default function BudgetTable({
   };
 
   const saveEdit = async (id: number) => {
-    await onUpdateItem(id, editForm);
-    setEditingId(null);
+    if (editForm.name !== undefined && !editForm.name.trim()) {
+      return;
+    }
+    try {
+      await onUpdateItem(id, editForm);
+      setEditingId(null);
+    } catch (err) {
+      console.error('Failed to update item:', err);
+    }
   };
 
   const totalBudgeted = items.reduce((sum, item) => sum + item.budgeted_amount, 0);
   const totalActual = items.reduce((sum, item) => sum + item.actual_amount, 0);
-
-  const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
@@ -115,6 +126,7 @@ export default function BudgetTable({
                       <input
                         type="number"
                         step="any"
+                        min="0"
                         value={editForm.budgeted_amount ?? 0}
                         onChange={(e) => setEditForm({ ...editForm, budgeted_amount: parseFloat(e.target.value) || 0 })}
                         className="px-2 py-1 border border-gray-300 rounded text-xs w-24 text-right"
@@ -128,6 +140,7 @@ export default function BudgetTable({
                       <input
                         type="number"
                         step="any"
+                        min="0"
                         value={editForm.actual_amount ?? 0}
                         onChange={(e) => setEditForm({ ...editForm, actual_amount: parseFloat(e.target.value) || 0 })}
                         className="px-2 py-1 border border-gray-300 rounded text-xs w-24 text-right"
@@ -144,13 +157,22 @@ export default function BudgetTable({
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center space-x-1">
                       {isEditing ? (
-                        <button
-                          onClick={() => saveEdit(item.id)}
-                          className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
-                          title="Save"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
+                        <>
+                          <button
+                            onClick={() => saveEdit(item.id)}
+                            className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+                            title="Save"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="p-1 text-gray-400 hover:text-gray-700 rounded"
+                            title="Cancel"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </>
                       ) : (
                         <button
                           onClick={() => startEdit(item)}

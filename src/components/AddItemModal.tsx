@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ItemType } from '@/lib/types';
 import { X } from 'lucide-react';
 
@@ -23,6 +23,12 @@ export default function AddItemModal({
   const [budgeted, setBudgeted] = useState<number>(0);
   const [actual, setActual] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setType(defaultType);
+    }
+  }, [isOpen, defaultType]);
 
   if (!isOpen) return null;
 
