@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { initDb, getDb } from '../src/lib/db';
+import { initDb } from '../src/lib/db';
 import {
   getOrCreateMonthWithDb,
   listMonthsWithDb,
@@ -14,6 +14,8 @@ import {
   updateTemplateItemWithDb,
   deleteTemplateItemWithDb,
   getMonthAnalyticsWithDb,
+} from '../src/lib/budget-service';
+import {
   getOrCreateMonth,
   listMonths,
   addBudgetItem,
@@ -104,6 +106,19 @@ test('Month creation, auto-population, item CRUD, templates, and analytics', asy
   const updated = updateBudgetItemWithDb(db, salaryItem!.id, { actual_amount: 5200 });
   assert.strictEqual(updated.actual_amount, 5200);
 
+  // Empty name on update should throw
+  assert.throws(() => {
+    updateBudgetItemWithDb(db, salaryItem!.id, { name: '   ' });
+  }, /Item name cannot be empty/);
+
+  // Amount sanitization on update
+  const sanitized = updateBudgetItemWithDb(db, salaryItem!.id, { budgeted_amount: -50, actual_amount: NaN as any });
+  assert.strictEqual(sanitized.budgeted_amount, 0);
+  assert.strictEqual(sanitized.actual_amount, 0);
+
+  // Restore salary item values for analytics
+  updateBudgetItemWithDb(db, salaryItem!.id, { budgeted_amount: 5000, actual_amount: 5200 });
+
   // Updating non-existent item should throw
   assert.throws(() => {
     updateBudgetItemWithDb(db, 999999, { actual_amount: 100 });
@@ -127,9 +142,20 @@ test('Month creation, auto-population, item CRUD, templates, and analytics', asy
   const itemsAfterDelete = db.prepare('SELECT * FROM budget_items WHERE month_id = ?').all('2026-09') as any[];
   assert.strictEqual(itemsAfterDelete.some(i => i.id === customItem.id), false);
 
-  // 7. Template items CRUD
+  // 7. Template items CRUD & validations
   const initialTemplates = getTemplateItemsWithDb(db);
   assert.ok(initialTemplates.length > 0);
+
+  // Validation: empty template name should throw on add
+  assert.throws(() => {
+    addTemplateItemWithDb(db, {
+      type: 'expense',
+      category: 'Insurance',
+      name: '  ',
+      default_budgeted_amount: 300,
+      sort_order: 10,
+    });
+  }, /Template item name is required/);
 
   const newTemplate = addTemplateItemWithDb(db, {
     type: 'expense',
@@ -140,6 +166,11 @@ test('Month creation, auto-population, item CRUD, templates, and analytics', asy
   });
   assert.strictEqual(newTemplate.name, 'Health Insurance');
   assert.strictEqual(newTemplate.default_budgeted_amount, 300);
+
+  // Validation: empty template name should throw on update
+  assert.throws(() => {
+    updateTemplateItemWithDb(db, newTemplate.id, { name: '  ' });
+  }, /Template item name cannot be empty/);
 
   const updatedTemplate = updateTemplateItemWithDb(db, newTemplate.id, {
     default_budgeted_amount: 350,
