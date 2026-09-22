@@ -14,6 +14,8 @@ import {
   updateTemplateItemWithDb,
   deleteTemplateItemWithDb,
   getMonthAnalyticsWithDb,
+  setMonthAsTemplateWithDb,
+  resetMonthToTemplateWithDb,
 } from '../src/lib/budget-service';
 import {
   getOrCreateMonth,
@@ -26,7 +28,10 @@ import {
   updateTemplateItem,
   deleteTemplateItem,
   getMonthAnalytics,
+  setMonthAsTemplate,
+  resetMonthToTemplate,
 } from '../src/lib/actions';
+
 
 const TEST_DB_PATH = path.join(process.cwd(), 'data', 'test_actions.db');
 
@@ -232,3 +237,47 @@ test('Server Actions wrap singleton DB correctly', async () => {
 
   await deleteTemplateItem(addedTemplate.id);
 });
+
+test('setMonthAsTemplate and resetMonthToTemplate functionality', async () => {
+  const TEST_SET_RESET_DB = path.join(process.cwd(), 'data', 'test_set_reset.db');
+  cleanTestDb(TEST_SET_RESET_DB);
+  const db = initDb(TEST_SET_RESET_DB);
+
+  // 1. Initialize a month
+  const { items: initialItems } = getOrCreateMonthWithDb(db, '2026-12');
+  assert.ok(initialItems.length > 0);
+
+  // 2. Add custom item and modify budgeted amounts
+  addBudgetItemWithDb(db, {
+    month_id: '2026-12',
+    type: 'expense',
+    category: 'Custom Cat',
+    name: 'Custom Gift',
+    budgeted_amount: 300,
+  });
+
+  // 3. Set month as template
+  const newTemplates = setMonthAsTemplateWithDb(db, '2026-12');
+  const customGiftTemplate = newTemplates.find(t => t.name === 'Custom Gift');
+  assert.ok(customGiftTemplate, 'Custom item should now be in default template');
+  assert.strictEqual(customGiftTemplate?.default_budgeted_amount, 300);
+
+  // 4. Test resetMonthToTemplate
+  // Modify an item in 2026-12 or add another item that is not in template
+  const tempItem = addBudgetItemWithDb(db, {
+    month_id: '2026-12',
+    type: 'expense',
+    category: 'OneOff',
+    name: 'Accidental Item',
+    budgeted_amount: 999,
+  });
+
+  // Reset to template
+  const resetItems = resetMonthToTemplateWithDb(db, '2026-12');
+  assert.strictEqual(resetItems.some(i => i.name === 'Accidental Item'), false, 'Accidental item should be removed');
+  assert.ok(resetItems.some(i => i.name === 'Custom Gift'), 'Custom Gift should be restored from template');
+
+  db.close();
+  cleanTestDb(TEST_SET_RESET_DB);
+});
+

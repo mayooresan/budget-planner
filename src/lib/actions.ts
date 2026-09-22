@@ -13,6 +13,8 @@ import {
   updateTemplateItemWithDb,
   deleteTemplateItemWithDb,
   getMonthAnalyticsWithDb,
+  setMonthAsTemplateWithDb,
+  resetMonthToTemplateWithDb,
 } from './budget-service';
 
 export async function getOrCreateMonth(monthId: string) {
@@ -62,3 +64,12 @@ export async function deleteTemplateItem(id: number) {
 export async function getMonthAnalytics(monthId: string) {
   return getMonthAnalyticsWithDb(getDb(), monthId);
 }
+
+export async function setMonthAsTemplate(monthId: string) {
+  return setMonthAsTemplateWithDb(getDb(), monthId);
+}
+
+export async function resetMonthToTemplate(monthId: string) {
+  return resetMonthToTemplateWithDb(getDb(), monthId);
+}
+

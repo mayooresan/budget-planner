@@ -184,3 +184,53 @@ export function getMonthAnalyticsWithDb(db: Database.Database, monthId: string):
     expenseCategories,
   };
 }
+
+export function setMonthAsTemplateWithDb(db: Database.Database, monthId: string): TemplateItem[] {
+  const items = db.prepare('SELECT * FROM budget_items WHERE month_id = ? ORDER BY type DESC, sort_order ASC, id ASC').all(monthId) as BudgetItem[];
+  if (items.length === 0) {
+    throw new Error(`Month "${monthId}" has no budget items to save as template.`);
+  }
+
+  const transaction = db.transaction(() => {
+    db.prepare('DELETE FROM template_items').run();
+    const insert = db.prepare(`
+      INSERT INTO template_items (type, category, name, default_budgeted_amount, sort_order)
+      VALUES (@type, @category, @name, @default_budgeted_amount, @sort_order)
+    `);
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      insert.run({
+        type: item.type,
+        category: item.category,
+        name: item.name,
+        default_budgeted_amount: item.budgeted_amount,
+        sort_order: i + 1,
+      });
+    }
+  });
+
+  transaction();
+  return db.prepare('SELECT * FROM template_items ORDER BY type DESC, sort_order ASC, id ASC').all() as TemplateItem[];
+}
+
+export function resetMonthToTemplateWithDb(db: Database.Database, monthId: string): BudgetItem[] {
+  const templates = db.prepare('SELECT * FROM template_items ORDER BY sort_order ASC, id ASC').all() as TemplateItem[];
+
+  const transaction = db.transaction(() => {
+    db.prepare('DELETE FROM budget_items WHERE month_id = ?').run(monthId);
+
+    const insert = db.prepare(`
+      INSERT INTO budget_items (month_id, type, category, name, budgeted_amount, actual_amount, sort_order)
+      VALUES (?, ?, ?, ?, ?, 0, ?)
+    `);
+
+    for (const t of templates) {
+      insert.run(monthId, t.type, t.category, t.name, t.default_budgeted_amount, t.sort_order);
+    }
+  });
+
+  transaction();
+  return db.prepare('SELECT * FROM budget_items WHERE month_id = ? ORDER BY type DESC, sort_order ASC, id ASC').all(monthId) as BudgetItem[];
+}
+

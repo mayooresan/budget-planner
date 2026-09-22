@@ -2,16 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { TemplateItem, ItemType } from '@/lib/types';
-import { getTemplateItems, addTemplateItem, updateTemplateItem, deleteTemplateItem } from '@/lib/actions';
-import { X, Plus, Trash2, Check, Edit2 } from 'lucide-react';
+import { getTemplateItems, addTemplateItem, updateTemplateItem, deleteTemplateItem, setMonthAsTemplate } from '@/lib/actions';
+import { X, Plus, Trash2, Check, Edit2, Copy } from 'lucide-react';
 
 interface TemplateModalProps {
   isOpen: boolean;
+  currentMonth?: string;
   onClose: () => void;
   onTemplatesChanged?: () => void;
 }
 
-export default function TemplateModal({ isOpen, onClose, onTemplatesChanged }: TemplateModalProps) {
+
+export default function TemplateModal({ isOpen, currentMonth, onClose, onTemplatesChanged }: TemplateModalProps) {
   const [items, setItems] = useState<TemplateItem[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<TemplateItem>>({});
@@ -32,6 +34,22 @@ export default function TemplateModal({ isOpen, onClose, onTemplatesChanged }: T
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleSetCurrentMonthAsTemplate = async () => {
+    if (!currentMonth) return;
+    const confirmed = window.confirm(
+      `Replace the default template with all items and budgeted amounts from ${currentMonth}?`
+    );
+    if (!confirmed) return;
+
+    try {
+      await setMonthAsTemplate(currentMonth);
+      await loadTemplates();
+      onTemplatesChanged?.();
+    } catch (err: any) {
+      alert(err.message || 'Failed to set month as template');
+    }
+  };
 
   const handleAddNew = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,9 +90,22 @@ export default function TemplateModal({ isOpen, onClose, onTemplatesChanged }: T
             <h3 className="text-lg font-bold text-gray-900">Default Monthly Template</h3>
             <p className="text-xs text-gray-500">Items configured here automatically populate any new month you select</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-2">
+            {currentMonth && (
+              <button
+                type="button"
+                onClick={handleSetCurrentMonthAsTemplate}
+                className="flex items-center space-x-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-semibold transition shadow-sm"
+                title={`Set ${currentMonth} as Default Template`}
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Use {currentMonth} as Template</span>
+              </button>
+            )}
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Add new template row */}

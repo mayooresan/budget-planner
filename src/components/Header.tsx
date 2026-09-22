@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Settings, FileSpreadsheet, Calendar, LogOut } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Settings, FileSpreadsheet, Calendar, LogOut, RotateCcw } from 'lucide-react';
 import { logoutAction } from '@/lib/auth-actions';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
   onMonthChange: (month: string) => void;
   onOpenSettings: () => void;
   onOpenCsvModal: () => void;
+  onResetMonth: () => Promise<void>;
 }
 
 export default function Header({
@@ -16,7 +17,9 @@ export default function Header({
   onMonthChange,
   onOpenSettings,
   onOpenCsvModal,
+  onResetMonth,
 }: HeaderProps) {
+
   const [year, month] = currentMonth.split('-').map(Number);
 
   const handlePrev = () => {
@@ -34,6 +37,14 @@ export default function Header({
   const handleLogout = async () => {
     await logoutAction();
     window.location.href = '/login';
+  };
+
+  const handleReset = async () => {
+    const confirmed = window.confirm(
+      `Are you sure you want to reset ${currentMonth} to the default template? All custom items and logged spending for this month will be cleared.`
+    );
+    if (!confirmed) return;
+    await onResetMonth();
   };
 
   return (
@@ -81,6 +92,14 @@ export default function Header({
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-2">
+          <button
+            onClick={handleReset}
+            className="flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-amber-700 bg-white border border-amber-200 rounded-lg hover:bg-amber-50 transition shadow-sm"
+            title="Reset this month to default template"
+          >
+            <RotateCcw className="w-4 h-4 text-amber-600" />
+            <span>Reset Month</span>
+          </button>
           <button
             onClick={onOpenCsvModal}
             className="flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm"

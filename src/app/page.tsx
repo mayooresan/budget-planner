@@ -15,7 +15,9 @@ import {
   updateBudgetItem,
   deleteBudgetItem,
   getMonthAnalytics,
+  resetMonthToTemplate,
 } from '@/lib/actions';
+
 
 function DashboardSkeleton() {
   return (
@@ -148,6 +150,11 @@ export default function Dashboard() {
     await loadMonthData(currentMonth);
   };
 
+  const handleResetMonth = async () => {
+    await resetMonthToTemplate(currentMonth);
+    await loadMonthData(currentMonth);
+  };
+
   const openAddModal = (type: ItemType) => {
     setAddModalType(type);
     setIsAddModalOpen(true);
@@ -163,6 +170,7 @@ export default function Dashboard() {
         onMonthChange={(m) => setCurrentMonth(m)}
         onOpenSettings={() => setIsTemplateModalOpen(true)}
         onOpenCsvModal={() => setIsCsvModalOpen(true)}
+        onResetMonth={handleResetMonth}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -207,6 +215,7 @@ export default function Dashboard() {
 
       <TemplateModal
         isOpen={isTemplateModalOpen}
+        currentMonth={currentMonth}
         onClose={() => setIsTemplateModalOpen(false)}
         onTemplatesChanged={() => loadMonthData(currentMonth)}
       />
