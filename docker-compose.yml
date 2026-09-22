@@ -16,6 +16,7 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - DB_PATH=/app/data/budget.db
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.monthly-planner.rule=Host(`budget.jaymayu.com`)"

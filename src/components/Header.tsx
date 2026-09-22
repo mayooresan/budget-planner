@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Settings, FileSpreadsheet, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Settings, FileSpreadsheet, Calendar, LogOut } from 'lucide-react';
+import { logoutAction } from '@/lib/auth-actions';
 
 interface HeaderProps {
   currentMonth: string;
@@ -17,8 +18,6 @@ export default function Header({
   onOpenCsvModal,
 }: HeaderProps) {
   const [year, month] = currentMonth.split('-').map(Number);
-  const date = new Date(year, month - 1);
-  const formattedMonthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
 
   const handlePrev = () => {
     const prevDate = new Date(year, month - 2);
@@ -30,6 +29,11 @@ export default function Header({
     const nextDate = new Date(year, month);
     const nextMonthStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`;
     onMonthChange(nextMonthStr);
+  };
+
+  const handleLogout = async () => {
+    await logoutAction();
+    window.location.href = '/login';
   };
 
   return (
@@ -90,6 +94,14 @@ export default function Header({
           >
             <Settings className="w-4 h-4 text-gray-500" />
             <span>Default Template</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-rose-600 bg-white border border-rose-200 rounded-lg hover:bg-rose-50 transition shadow-sm"
+            title="Log out"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
           </button>
         </div>
       </div>
