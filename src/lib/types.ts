@@ -14,7 +14,7 @@ export interface BudgetItem {
   category: string;
   name: string;
   budgeted_amount: number;
-  actual_amount: number;
+  actual_amount?: number;
   notes: string | null;
   sort_order: number;
 }
@@ -30,17 +30,14 @@ export interface TemplateItem {
 
 export interface CategorySummary {
   category: string;
-  budgeted: number;
-  actual: number;
-  difference: number;
+  amount: number;
+  percentage: number;
 }
 
 export interface MonthAnalytics {
-  totalBudgetedIncome: number;
-  totalActualIncome: number;
-  totalBudgetedExpenses: number;
-  totalActualExpenses: number;
-  netBudgetedSavings: number;
-  netActualSavings: number;
+  totalIncome: number;
+  totalExpenses: number;
+  netSavings: number;
+  savingsRate: number;
   expenseCategories: CategorySummary[];
 }

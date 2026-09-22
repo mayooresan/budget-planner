@@ -144,43 +144,34 @@ export function deleteTemplateItemWithDb(db: Database.Database, id: number): voi
 export function getMonthAnalyticsWithDb(db: Database.Database, monthId: string): MonthAnalytics {
   const items = db.prepare('SELECT * FROM budget_items WHERE month_id = ?').all(monthId) as BudgetItem[];
 
-  let totalBudgetedIncome = 0;
-  let totalActualIncome = 0;
-  let totalBudgetedExpenses = 0;
-  let totalActualExpenses = 0;
+  let totalIncome = 0;
+  let totalExpenses = 0;
 
-  const expenseCategoryMap: Record<string, { budgeted: number; actual: number }> = {};
+  const expenseCategoryMap: Record<string, number> = {};
 
   for (const item of items) {
     if (item.type === 'income') {
-      totalBudgetedIncome += item.budgeted_amount;
-      totalActualIncome += item.actual_amount;
+      totalIncome += item.budgeted_amount;
     } else {
-      totalBudgetedExpenses += item.budgeted_amount;
-      totalActualExpenses += item.actual_amount;
-
-      if (!expenseCategoryMap[item.category]) {
-        expenseCategoryMap[item.category] = { budgeted: 0, actual: 0 };
-      }
-      expenseCategoryMap[item.category].budgeted += item.budgeted_amount;
-      expenseCategoryMap[item.category].actual += item.actual_amount;
+      totalExpenses += item.budgeted_amount;
+      expenseCategoryMap[item.category] = (expenseCategoryMap[item.category] || 0) + item.budgeted_amount;
     }
   }
 
-  const expenseCategories: CategorySummary[] = Object.entries(expenseCategoryMap).map(([category, vals]) => ({
+  const netSavings = totalIncome - totalExpenses;
+  const savingsRate = totalIncome > 0 ? Math.round((netSavings / totalIncome) * 100) : 0;
+
+  const expenseCategories: CategorySummary[] = Object.entries(expenseCategoryMap).map(([category, amount]) => ({
     category,
-    budgeted: vals.budgeted,
-    actual: vals.actual,
-    difference: vals.budgeted - vals.actual,
-  })).sort((a, b) => b.actual - a.actual);
+    amount,
+    percentage: totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0,
+  })).sort((a, b) => b.amount - a.amount);
 
   return {
-    totalBudgetedIncome,
-    totalActualIncome,
-    totalBudgetedExpenses,
-    totalActualExpenses,
-    netBudgetedSavings: totalBudgetedIncome - totalBudgetedExpenses,
-    netActualSavings: totalActualIncome - totalActualExpenses,
+    totalIncome,
+    totalExpenses,
+    netSavings,
+    savingsRate,
     expenseCategories,
   };
 }

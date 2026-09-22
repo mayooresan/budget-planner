@@ -8,7 +8,7 @@ interface AddItemModalProps {
   isOpen: boolean;
   defaultType: ItemType;
   onClose: () => void;
-  onAdd: (data: { type: ItemType; category: string; name: string; budgeted_amount: number; actual_amount: number }) => Promise<void>;
+  onAdd: (data: { type: ItemType; category: string; name: string; budgeted_amount: number }) => Promise<void>;
 }
 
 export default function AddItemModal({
@@ -21,7 +21,6 @@ export default function AddItemModal({
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [budgeted, setBudgeted] = useState<number>(0);
-  const [actual, setActual] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -43,12 +42,10 @@ export default function AddItemModal({
         name: name.trim(),
         category: category.trim() || 'General',
         budgeted_amount: budgeted,
-        actual_amount: actual,
       });
       setName('');
       setCategory('');
       setBudgeted(0);
-      setActual(0);
       onClose();
     } finally {
       setIsSubmitting(false);
@@ -113,29 +110,16 @@ export default function AddItemModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Budgeted ($)</label>
-              <input
-                type="number"
-                step="any"
-                min="0"
-                value={budgeted}
-                onChange={(e) => setBudgeted(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Actual ($)</label>
-              <input
-                type="number"
-                step="any"
-                min="0"
-                value={actual}
-                onChange={(e) => setActual(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Planned Amount ($)</label>
+            <input
+              type="number"
+              step="any"
+              min="0"
+              value={budgeted}
+              onChange={(e) => setBudgeted(parseFloat(e.target.value) || 0)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
           </div>
 
           <div className="flex items-center justify-end space-x-2 pt-4 border-t border-gray-100">

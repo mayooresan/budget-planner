@@ -32,12 +32,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Required column check
-    const requiredColumns = ['month', 'type', 'category', 'name', 'budgeted_amount', 'actual_amount'];
+    const requiredColumns = ['month', 'type', 'category', 'name'];
     const headers = Object.keys(rows[0]);
     for (const col of requiredColumns) {
       if (!headers.includes(col)) {
         return NextResponse.json({ error: `Missing required column "${col}" in CSV` }, { status: 400 });
       }
+    }
+    if (!headers.includes('amount') && !headers.includes('budgeted_amount')) {
+      return NextResponse.json({ error: 'Missing required column "amount" in CSV' }, { status: 400 });
     }
 
     const db = getDb();
@@ -68,8 +71,8 @@ export async function POST(request: NextRequest) {
         const name = String(row.name || '').trim();
         if (!name) continue;
 
-        const budgeted = Math.max(0, parseFloat(row.budgeted_amount) || 0);
-        const actual = Math.max(0, parseFloat(row.actual_amount) || 0);
+        const budgeted = Math.max(0, parseFloat(row.amount ?? row.budgeted_amount) || 0);
+        const actual = 0;
         const notes = row.notes ? String(row.notes).trim() : null;
 
         insertItem.run(monthId, type, category, name, budgeted, actual, notes, 0);

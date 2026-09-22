@@ -37,7 +37,6 @@ export default function BudgetTable({
       name: item.name,
       category: item.category,
       budgeted_amount: item.budgeted_amount,
-      actual_amount: item.actual_amount,
     });
   };
 
@@ -54,7 +53,6 @@ export default function BudgetTable({
   };
 
   const totalBudgeted = items.reduce((sum, item) => sum + item.budgeted_amount, 0);
-  const totalActual = items.reduce((sum, item) => sum + item.actual_amount, 0);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
@@ -82,16 +80,13 @@ export default function BudgetTable({
             <tr>
               <th className="px-6 py-3">Name</th>
               <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3 text-right">Budgeted</th>
-              <th className="px-4 py-3 text-right">Actual</th>
-              <th className="px-4 py-3 text-right">Diff</th>
+              <th className="px-4 py-3 text-right">Planned Amount</th>
               <th className="px-4 py-3 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {items.map((item) => {
               const isEditing = editingId === item.id;
-              const diff = type === 'income' ? item.actual_amount - item.budgeted_amount : item.budgeted_amount - item.actual_amount;
 
               return (
                 <tr key={item.id} className="hover:bg-gray-50/60 transition">
@@ -121,7 +116,7 @@ export default function BudgetTable({
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right font-semibold text-gray-900">
                     {isEditing ? (
                       <input
                         type="number"
@@ -129,30 +124,11 @@ export default function BudgetTable({
                         min="0"
                         value={editForm.budgeted_amount ?? 0}
                         onChange={(e) => setEditForm({ ...editForm, budgeted_amount: parseFloat(e.target.value) || 0 })}
-                        className="px-2 py-1 border border-gray-300 rounded text-xs w-24 text-right"
+                        className="px-2 py-1 border border-gray-300 rounded text-xs w-28 text-right"
                       />
                     ) : (
                       formatCurrency(item.budgeted_amount)
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold text-gray-900">
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        step="any"
-                        min="0"
-                        value={editForm.actual_amount ?? 0}
-                        onChange={(e) => setEditForm({ ...editForm, actual_amount: parseFloat(e.target.value) || 0 })}
-                        className="px-2 py-1 border border-gray-300 rounded text-xs w-24 text-right"
-                      />
-                    ) : (
-                      formatCurrency(item.actual_amount)
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right text-xs font-medium">
-                    <span className={diff >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
-                      {diff >= 0 ? '+' : ''}{formatCurrency(diff)}
-                    </span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center space-x-1">
@@ -197,13 +173,9 @@ export default function BudgetTable({
           </tbody>
           <tfoot className="bg-gray-50/80 font-bold border-t border-gray-200">
             <tr>
-              <td className="px-6 py-3 text-gray-900">Total</td>
+              <td className="px-6 py-3 text-gray-900">Total Planned</td>
               <td className="px-4 py-3"></td>
-              <td className="px-4 py-3 text-right text-gray-700">{formatCurrency(totalBudgeted)}</td>
-              <td className="px-4 py-3 text-right text-gray-900">{formatCurrency(totalActual)}</td>
-              <td className="px-4 py-3 text-right text-xs">
-                {formatCurrency(type === 'income' ? totalActual - totalBudgeted : totalBudgeted - totalActual)}
-              </td>
+              <td className="px-4 py-3 text-right text-gray-900">{formatCurrency(totalBudgeted)}</td>
               <td></td>
             </tr>
           </tfoot>

@@ -131,15 +131,15 @@ test('Month creation, auto-population, item CRUD, templates, and analytics', asy
 
   // 5. Analytics calculation
   const analytics = getMonthAnalyticsWithDb(db, '2026-09');
-  assert.strictEqual(analytics.totalBudgetedIncome, 5000);
-  assert.strictEqual(analytics.totalActualIncome, 5200);
+  assert.strictEqual(analytics.totalIncome, 5000);
   assert.ok(analytics.expenseCategories.length > 0);
-  assert.strictEqual(analytics.netBudgetedSavings, analytics.totalBudgetedIncome - analytics.totalBudgetedExpenses);
-  assert.strictEqual(analytics.netActualSavings, analytics.totalActualIncome - analytics.totalActualExpenses);
+  assert.strictEqual(analytics.netSavings, analytics.totalIncome - analytics.totalExpenses);
+  assert.ok(analytics.savingsRate >= 0 && analytics.savingsRate <= 100);
 
   // Check category summaries
   for (const cat of analytics.expenseCategories) {
-    assert.strictEqual(cat.difference, cat.budgeted - cat.actual);
+    assert.ok(cat.amount >= 0);
+    assert.ok(cat.percentage >= 0);
   }
 
   // 6. Delete budget item
@@ -216,7 +216,7 @@ test('Server Actions wrap singleton DB correctly', async () => {
   assert.strictEqual(updatedItem.actual_amount, 1200);
 
   const analytics = await getMonthAnalytics('2026-11');
-  assert.ok(analytics.totalBudgetedIncome >= 1000);
+  assert.ok(analytics.totalIncome >= 1000);
 
   await deleteBudgetItem(item.id);
 

@@ -34,30 +34,30 @@ const COLORS = [
 
 export default function Charts({ analytics }: ChartsProps) {
   const expenseData = analytics.expenseCategories
-    .filter((cat) => cat.actual > 0)
+    .filter((cat) => cat.amount > 0)
     .map((cat) => ({
       name: cat.category,
-      value: cat.actual,
+      value: cat.amount,
+      percentage: cat.percentage,
     }));
 
   const barData = analytics.expenseCategories.map((cat) => ({
     name: cat.category,
-    Budgeted: cat.budgeted,
-    Actual: cat.actual,
+    Amount: cat.amount,
   }));
 
-  const formatCurrency = (val: number) => `$${val.toLocaleString()}`;
+  const formatCurrency = (val: number) => `$${Number(val).toLocaleString()}`;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Donut Chart: Expense Breakdown */}
       <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col">
         <h2 className="text-base font-bold text-gray-900 mb-1">Expense Breakdown</h2>
-        <p className="text-xs text-gray-500 mb-4">Where your money is going by category</p>
+        <p className="text-xs text-gray-500 mb-4">Planned distribution by category</p>
 
         {expenseData.length === 0 ? (
           <div className="flex-1 flex items-center justify-center min-h-[260px] text-sm text-gray-400">
-            No actual expenses recorded for this month yet
+            No planned expenses for this month yet
           </div>
         ) : (
           <div className="h-[280px] w-full">
@@ -77,7 +77,7 @@ export default function Charts({ analytics }: ChartsProps) {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(val: number) => [formatCurrency(val), 'Spent']}
+                  formatter={(val: number) => [formatCurrency(val), 'Planned']}
                   contentStyle={{ borderRadius: '10px', border: '1px solid #E5E7EB' }}
                 />
                 <Legend verticalAlign="bottom" height={36} />
@@ -87,10 +87,10 @@ export default function Charts({ analytics }: ChartsProps) {
         )}
       </div>
 
-      {/* Bar Chart: Budget vs Actual */}
+      {/* Bar Chart: Category Budget Allocations */}
       <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col">
-        <h2 className="text-base font-bold text-gray-900 mb-1">Budget vs. Actual Spending</h2>
-        <p className="text-xs text-gray-500 mb-4">Comparison per expense category</p>
+        <h2 className="text-base font-bold text-gray-900 mb-1">Category Allocations</h2>
+        <p className="text-xs text-gray-500 mb-4">Planned amounts per expense category</p>
 
         {barData.length === 0 ? (
           <div className="flex-1 flex items-center justify-center min-h-[260px] text-sm text-gray-400">
@@ -104,12 +104,10 @@ export default function Charts({ analytics }: ChartsProps) {
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-20} textAnchor="end" />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
                 <Tooltip
-                  formatter={(val: number) => [formatCurrency(val)]}
+                  formatter={(val: number) => [formatCurrency(val), 'Planned']}
                   contentStyle={{ borderRadius: '10px', border: '1px solid #E5E7EB' }}
                 />
-                <Legend verticalAlign="top" height={30} />
-                <Bar dataKey="Budgeted" fill="#94A3B8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Actual" fill="#10B981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Amount" fill="#10B981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

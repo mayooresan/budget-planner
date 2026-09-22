@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     const db = getDb();
     let query = `
-      SELECT month_id as month, type, category, name, budgeted_amount, actual_amount, COALESCE(notes, '') as notes
+      SELECT month_id as month, type, category, name, budgeted_amount as amount, COALESCE(notes, '') as notes
       FROM budget_items
     `;
     const params: string[] = [];
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const items = db.prepare(query).all(...params);
     const csv = items.length > 0
       ? Papa.unparse(items, { header: true })
-      : 'month,type,category,name,budgeted_amount,actual_amount,notes\n';
+      : 'month,type,category,name,amount,notes\n';
 
     const filename = month === 'all' ? `budget-export-all.csv` : `budget-export-${month}.csv`;
 

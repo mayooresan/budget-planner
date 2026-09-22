@@ -137,7 +137,6 @@ export default function Dashboard() {
     category: string;
     name: string;
     budgeted_amount: number;
-    actual_amount: number;
   }) => {
     await addBudgetItem({
       month_id: currentMonth,
@@ -145,7 +144,6 @@ export default function Dashboard() {
       category: data.category,
       name: data.name,
       budgeted_amount: data.budgeted_amount,
-      actual_amount: data.actual_amount,
     });
     await loadMonthData(currentMonth);
   };
