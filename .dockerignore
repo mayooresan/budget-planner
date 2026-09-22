@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.gitignore
+.superpowers
+.worktrees
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+*.log
+.DS_Store
+README.md
+docs
+tests

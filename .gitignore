@@ -10,3 +10,5 @@ data/*.db-wal
 data/*.db-shm
 .superpowers/
 .worktrees/
+.env
+*.tsbuildinfo

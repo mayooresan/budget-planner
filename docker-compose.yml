@@ -1,0 +1,30 @@
+services:
+  monthly-planner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: monthly-planner:latest
+    container_name: monthly-planner
+    restart: unless-stopped
+    # ports:
+    #   - "${HOST_PORT:-3000}:3000"  # Optional: Commented out since Traefik routes internally via the web network
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_PATH=/app/data/budget.db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.monthly-planner.rule=Host(`budget.jaymayu.com`)"
+      - "traefik.http.routers.monthly-planner.entrypoints=websecure"
+      - "traefik.http.routers.monthly-planner.tls.certresolver=letsencrypt"
+      - "traefik.http.services.monthly-planner.loadbalancer.server.port=3000"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
